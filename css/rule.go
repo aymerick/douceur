@@ -1,4 +1,4 @@
-package douceur
+package css
 
 import "fmt"
 
@@ -6,11 +6,13 @@ const (
 	IDENT_SPACES = 2
 )
 
+// Rule kinds
 const (
 	QUALIFIED_RULE RuleKind = iota
 	AT_RULE
 )
 
+// At Rules than have Rules inside their block instead of Declarations
 var atRulesWithRulesBlock = []string{
 	"@document", "@font-feature-values", "@keyframes", "@media", "@supports",
 }
@@ -48,6 +50,19 @@ func (kind RuleKind) String() string {
 	default:
 		return "WAT"
 	}
+}
+
+// Returns true if this rule embeds another rules
+func (rule *Rule) EmbedsRules() bool {
+	if rule.Kind == AT_RULE {
+		for _, atRuleName := range atRulesWithRulesBlock {
+			if rule.Name == atRuleName {
+				return true
+			}
+		}
+	}
+
+	return false
 }
 
 // Returns true if both rules are equals
@@ -140,7 +155,7 @@ func (rule *Rule) String() string {
 
 		result += " {\n"
 
-		if rule.embedsRules() {
+		if rule.EmbedsRules() {
 			for _, subRule := range rule.Rules {
 				result += fmt.Sprintf("%s%s\n", rule.indent(), subRule.String())
 			}
@@ -176,17 +191,4 @@ func (rule *Rule) indentEndBlock() string {
 	}
 
 	return result
-}
-
-// Returns true if this rule embeds another rules
-func (rule *Rule) embedsRules() bool {
-	if rule.Kind == AT_RULE {
-		for _, atRuleName := range atRulesWithRulesBlock {
-			if rule.Name == atRuleName {
-				return true
-			}
-		}
-	}
-
-	return false
 }

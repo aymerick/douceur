@@ -1,25 +1,27 @@
-package douceur
+package parser
 
 import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/aymerick/douceur/css"
 )
 
-func MustParse(t *testing.T, css string, nbRules int) *Stylesheet {
-	stylesheet, err := Parse(css)
+func MustParse(t *testing.T, txt string, nbRules int) *css.Stylesheet {
+	stylesheet, err := Parse(txt)
 	if err != nil {
-		t.Fatal("Failed to parse css", err, css)
+		t.Fatal("Failed to parse css", err, txt)
 	}
 
 	if len(stylesheet.Rules) != nbRules {
-		t.Fatal("Failed to parse Qualified Rules", css)
+		t.Fatal("Failed to parse Qualified Rules", txt)
 	}
 
 	return stylesheet
 }
 
-func MustEqualRule(t *testing.T, parsedRule *Rule, expectedRule *Rule) {
+func MustEqualRule(t *testing.T, parsedRule *css.Rule, expectedRule *css.Rule) {
 	if !parsedRule.Equal(expectedRule) {
 		diff := parsedRule.Diff(expectedRule)
 
@@ -34,96 +36,96 @@ func MustEqualCSS(t *testing.T, ruleString string, expected string) {
 }
 
 func TestQualifiedRule(t *testing.T) {
-	css := `/* This is a comment */
+	input := `/* This is a comment */
 p > a {
     color: blue;
     text-decoration: underline; /* This is a comment */
 }`
 
-	expectedRule := &Rule{
-		Kind:    QUALIFIED_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.QUALIFIED_RULE,
 		Prelude: "p > a",
-		Declarations: []*Declaration{
-			&Declaration{
+		Declarations: []*css.Declaration{
+			&css.Declaration{
 				Property: "color",
 				Value:    "blue",
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "text-decoration",
 				Value:    "underline",
 			},
 		},
 	}
 
-	expectedCSS := `p > a {
+	expectedOutput := `p > a {
   color: blue;
   text-decoration: underline;
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
 func TestAtRuleCharset(t *testing.T) {
-	css := `@charset "UTF-8";`
+	input := `@charset "UTF-8";`
 
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@charset",
 		Prelude: "\"UTF-8\"",
 	}
 
-	expectedCSS := `@charset "UTF-8";`
+	expectedOutput := `@charset "UTF-8";`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
 func TestAtRuleCounterStyle(t *testing.T) {
-	css := `@counter-style footnote {
+	input := `@counter-style footnote {
   system: symbolic;
   symbols: '*' ⁑ † ‡;
   suffix: '';
 }`
 
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@counter-style",
 		Prelude: "footnote",
-		Declarations: []*Declaration{
-			&Declaration{
+		Declarations: []*css.Declaration{
+			&css.Declaration{
 				Property: "system",
 				Value:    "symbolic",
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "symbols",
 				Value:    "'*' ⁑ † ‡",
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "suffix",
 				Value:    "''",
 			},
 		},
 	}
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), css)
+	MustEqualCSS(t, stylesheet.String(), input)
 }
 
 func TestAtRuleDocument(t *testing.T) {
-	css := `@document url(http://www.w3.org/),
+	input := `@document url(http://www.w3.org/),
                url-prefix(http://www.w3.org/Style/),
                domain(mozilla.org),
                regexp("https:.*")
@@ -139,23 +141,23 @@ func TestAtRuleDocument(t *testing.T) {
   body { color: purple; background: yellow; }
 }`
 
-	expectedRule := &Rule{
-		Kind: AT_RULE,
+	expectedRule := &css.Rule{
+		Kind: css.AT_RULE,
 		Name: "@document",
 		Prelude: `url(http://www.w3.org/),
                url-prefix(http://www.w3.org/Style/),
                domain(mozilla.org),
                regexp("https:.*")`,
-		Rules: []*Rule{
-			&Rule{
-				Kind:    QUALIFIED_RULE,
+		Rules: []*css.Rule{
+			&css.Rule{
+				Kind:    css.QUALIFIED_RULE,
 				Prelude: "body",
-				Declarations: []*Declaration{
-					&Declaration{
+				Declarations: []*css.Declaration{
+					&css.Declaration{
 						Property: "color",
 						Value:    "purple",
 					},
-					&Declaration{
+					&css.Declaration{
 						Property: "background",
 						Value:    "yellow",
 					},
@@ -174,7 +176,7 @@ func TestAtRuleDocument(t *testing.T) {
   }
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
@@ -183,7 +185,7 @@ func TestAtRuleDocument(t *testing.T) {
 }
 
 func TestAtRuleFontFace(t *testing.T) {
-	css := `@font-face {
+	input := `@font-face {
   font-family: MyHelvetica;
   src: local("Helvetica Neue Bold"),
        local("HelveticaNeue-Bold"),
@@ -191,51 +193,51 @@ func TestAtRuleFontFace(t *testing.T) {
   font-weight: bold;
 }`
 
-	expectedRule := &Rule{
-		Kind: AT_RULE,
+	expectedRule := &css.Rule{
+		Kind: css.AT_RULE,
 		Name: "@font-face",
-		Declarations: []*Declaration{
-			&Declaration{
+		Declarations: []*css.Declaration{
+			&css.Declaration{
 				Property: "font-family",
 				Value:    "MyHelvetica",
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "src",
 				Value: `local("Helvetica Neue Bold"),
        local("HelveticaNeue-Bold"),
        url(MgOpenModernaBold.ttf)`,
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "font-weight",
 				Value:    "bold",
 			},
 		},
 	}
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), css)
+	MustEqualCSS(t, stylesheet.String(), input)
 }
 
 func TestAtRuleFontFeatureValues(t *testing.T) {
-	css := `@font-feature-values Font Two { /* How to activate nice-style in Font Two */
+	input := `@font-feature-values Font Two { /* How to activate nice-style in Font Two */
   @styleset {
     nice-style: 4;
   }
 }`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@font-feature-values",
 		Prelude: "Font Two",
-		Rules: []*Rule{
-			&Rule{
-				Kind: AT_RULE,
+		Rules: []*css.Rule{
+			&css.Rule{
+				Kind: css.AT_RULE,
 				Name: "@styleset",
-				Declarations: []*Declaration{
-					&Declaration{
+				Declarations: []*css.Declaration{
+					&css.Declaration{
 						Property: "nice-style",
 						Value:    "4",
 					},
@@ -244,77 +246,77 @@ func TestAtRuleFontFeatureValues(t *testing.T) {
 		},
 	}
 
-	expectedCSS := `@font-feature-values Font Two {
+	expectedOutput := `@font-feature-values Font Two {
   @styleset {
     nice-style: 4;
   }
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
 func TestAtRuleImport(t *testing.T) {
-	css := `@import "my-styles.css";
+	input := `@import "my-styles.css";
 @import url('landscape.css') screen and (orientation:landscape);`
 
-	expectedRule1 := &Rule{
-		Kind:    AT_RULE,
+	expectedRule1 := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@import",
 		Prelude: "\"my-styles.css\"",
 	}
 
-	expectedRule2 := &Rule{
-		Kind:    AT_RULE,
+	expectedRule2 := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@import",
 		Prelude: "url('landscape.css') screen and (orientation:landscape)",
 	}
 
-	stylesheet := MustParse(t, css, 2)
+	stylesheet := MustParse(t, input, 2)
 
 	MustEqualRule(t, stylesheet.Rules[0], expectedRule1)
 	MustEqualRule(t, stylesheet.Rules[1], expectedRule2)
 
-	MustEqualCSS(t, stylesheet.String(), css)
+	MustEqualCSS(t, stylesheet.String(), input)
 }
 
 func TestAtRuleKeyframes(t *testing.T) {
-	css := `@keyframes identifier {
+	input := `@keyframes identifier {
   0% { top: 0; left: 0; }
   100% { top: 100px; left: 100%; }
 }`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@keyframes",
 		Prelude: "identifier",
-		Rules: []*Rule{
-			&Rule{
-				Kind:    QUALIFIED_RULE,
+		Rules: []*css.Rule{
+			&css.Rule{
+				Kind:    css.QUALIFIED_RULE,
 				Prelude: "0%",
-				Declarations: []*Declaration{
-					&Declaration{
+				Declarations: []*css.Declaration{
+					&css.Declaration{
 						Property: "top",
 						Value:    "0",
 					},
-					&Declaration{
+					&css.Declaration{
 						Property: "left",
 						Value:    "0",
 					},
 				},
 			},
-			&Rule{
-				Kind:    QUALIFIED_RULE,
+			&css.Rule{
+				Kind:    css.QUALIFIED_RULE,
 				Prelude: "100%",
-				Declarations: []*Declaration{
-					&Declaration{
+				Declarations: []*css.Declaration{
+					&css.Declaration{
 						Property: "top",
 						Value:    "100px",
 					},
-					&Declaration{
+					&css.Declaration{
 						Property: "left",
 						Value:    "100%",
 					},
@@ -323,7 +325,7 @@ func TestAtRuleKeyframes(t *testing.T) {
 		},
 	}
 
-	expectedCSS := `@keyframes identifier {
+	expectedOutput := `@keyframes identifier {
   0% {
     top: 0;
     left: 0;
@@ -334,28 +336,28 @@ func TestAtRuleKeyframes(t *testing.T) {
   }
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
 func TestAtRuleMedia(t *testing.T) {
-	css := `@media screen, print {
+	input := `@media screen, print {
   body { line-height: 1.2 }
 }`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@media",
 		Prelude: "screen, print",
-		Rules: []*Rule{
-			&Rule{
-				Kind:    QUALIFIED_RULE,
+		Rules: []*css.Rule{
+			&css.Rule{
+				Kind:    css.QUALIFIED_RULE,
 				Prelude: "body",
-				Declarations: []*Declaration{
-					&Declaration{
+				Declarations: []*css.Declaration{
+					&css.Declaration{
 						Property: "line-height",
 						Value:    "1.2",
 					},
@@ -364,105 +366,105 @@ func TestAtRuleMedia(t *testing.T) {
 		},
 	}
 
-	expectedCSS := `@media screen, print {
+	expectedOutput := `@media screen, print {
   body {
     line-height: 1.2;
   }
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
 func TestAtRuleNamespace(t *testing.T) {
-	css := `@namespace svg url(http://www.w3.org/2000/svg);`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	input := `@namespace svg url(http://www.w3.org/2000/svg);`
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@namespace",
 		Prelude: "svg url(http://www.w3.org/2000/svg)",
 	}
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), css)
+	MustEqualCSS(t, stylesheet.String(), input)
 }
 
 func TestAtRulePage(t *testing.T) {
-	css := `@page :left {
+	input := `@page :left {
   margin-left: 4cm;
   margin-right: 3cm;
 }`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@page",
 		Prelude: ":left",
-		Declarations: []*Declaration{
-			&Declaration{
+		Declarations: []*css.Declaration{
+			&css.Declaration{
 				Property: "margin-left",
 				Value:    "4cm",
 			},
-			&Declaration{
+			&css.Declaration{
 				Property: "margin-right",
 				Value:    "3cm",
 			},
 		},
 	}
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), css)
+	MustEqualCSS(t, stylesheet.String(), input)
 }
 
 func TestAtRuleSupports(t *testing.T) {
-	css := `@supports (animation-name: test) {
+	input := `@supports (animation-name: test) {
     /* specific CSS applied when animations are supported unprefixed */
     @keyframes { /* @supports being a CSS conditional group at-rule, it can includes other relevent at-rules */
       0% { top: 0; left: 0; }
       100% { top: 100px; left: 100%; }
     }
 }`
-	expectedRule := &Rule{
-		Kind:    AT_RULE,
+	expectedRule := &css.Rule{
+		Kind:    css.AT_RULE,
 		Name:    "@supports",
 		Prelude: "(animation-name: test)",
-		Rules: []*Rule{
-			&Rule{
-				Kind: AT_RULE,
+		Rules: []*css.Rule{
+			&css.Rule{
+				Kind: css.AT_RULE,
 				Name: "@keyframes",
-				Rules: []*Rule{
-					&Rule{
-						Kind:    QUALIFIED_RULE,
+				Rules: []*css.Rule{
+					&css.Rule{
+						Kind:    css.QUALIFIED_RULE,
 						Prelude: "0%",
-						Declarations: []*Declaration{
-							&Declaration{
+						Declarations: []*css.Declaration{
+							&css.Declaration{
 								Property: "top",
 								Value:    "0",
 							},
-							&Declaration{
+							&css.Declaration{
 								Property: "left",
 								Value:    "0",
 							},
 						},
 					},
-					&Rule{
-						Kind:    QUALIFIED_RULE,
+					&css.Rule{
+						Kind:    css.QUALIFIED_RULE,
 						Prelude: "100%",
-						Declarations: []*Declaration{
-							&Declaration{
+						Declarations: []*css.Declaration{
+							&css.Declaration{
 								Property: "top",
 								Value:    "100px",
 							},
-							&Declaration{
+							&css.Declaration{
 								Property: "left",
 								Value:    "100%",
 							},
@@ -473,7 +475,7 @@ func TestAtRuleSupports(t *testing.T) {
 		},
 	}
 
-	expectedCSS := `@supports (animation-name: test) {
+	expectedOutput := `@supports (animation-name: test) {
   @keyframes {
     0% {
       top: 0;
@@ -486,10 +488,10 @@ func TestAtRuleSupports(t *testing.T) {
   }
 }`
 
-	stylesheet := MustParse(t, css, 1)
+	stylesheet := MustParse(t, input, 1)
 	rule := stylesheet.Rules[0]
 
 	MustEqualRule(t, rule, expectedRule)
 
-	MustEqualCSS(t, stylesheet.String(), expectedCSS)
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }

@@ -1,4 +1,4 @@
-package douceur
+package css
 
 type Stylesheet struct {
 	Rules []*Rule

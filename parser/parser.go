@@ -1,4 +1,4 @@
-package douceur
+package parser
 
 // cf. http://www.w3.org/TR/css3-syntax/
 // cf. https://github.com/tabatkins/parse-css
@@ -9,10 +9,11 @@ import (
 	"strings"
 
 	"github.com/gorilla/css/scanner"
+
+	"github.com/aymerick/douceur/css"
 )
 
 type Parser struct {
-	css  string           // Input css
 	scan *scanner.Scanner // Tokenizer
 
 	// Tokens parsed but not consumed yet
@@ -22,14 +23,13 @@ type Parser struct {
 	embedLevel int
 }
 
-func NewParser(css string) *Parser {
+func NewParser(txt string) *Parser {
 	return &Parser{
-		css:  css,
-		scan: scanner.New(css),
+		scan: scanner.New(txt),
 	}
 }
 
-func Parse(text string) (*Stylesheet, error) {
+func Parse(text string) (*css.Stylesheet, error) {
 	result, err := NewParser(text).ParseStylesheet()
 	if err != nil {
 		return nil, err
@@ -39,8 +39,8 @@ func Parse(text string) (*Stylesheet, error) {
 }
 
 // Parse a stylesheet
-func (parser *Parser) ParseStylesheet() (*Stylesheet, error) {
-	result := NewStylesheet()
+func (parser *Parser) ParseStylesheet() (*css.Stylesheet, error) {
+	result := css.NewStylesheet()
 
 	// Parse BOM
 	if _, err := parser.parseBOM(); err != nil {
@@ -59,8 +59,8 @@ func (parser *Parser) ParseStylesheet() (*Stylesheet, error) {
 }
 
 // Parse a list of rules
-func (parser *Parser) ParseRules() ([]*Rule, error) {
-	result := []*Rule{}
+func (parser *Parser) ParseRules() ([]*css.Rule, error) {
+	result := []*css.Rule{}
 
 	inBlock := false
 	if parser.tokenChar("{") {
@@ -100,7 +100,7 @@ func (parser *Parser) ParseRules() ([]*Rule, error) {
 }
 
 // Parse a rule
-func (parser *Parser) ParseRule() (*Rule, error) {
+func (parser *Parser) ParseRule() (*css.Rule, error) {
 	if parser.tokenAtKeyword() {
 		return parser.parseAtRule()
 	} else {
@@ -109,8 +109,8 @@ func (parser *Parser) ParseRule() (*Rule, error) {
 }
 
 // Parse a list of declarations
-func (parser *Parser) ParseDeclarations() ([]*Declaration, error) {
-	result := []*Declaration{}
+func (parser *Parser) ParseDeclarations() ([]*css.Declaration, error) {
+	result := []*css.Declaration{}
 
 	if parser.tokenChar("{") {
 		parser.shiftToken()
@@ -137,8 +137,8 @@ func (parser *Parser) ParseDeclarations() ([]*Declaration, error) {
 }
 
 // Parse a declaration
-func (parser *Parser) ParseDeclaration() (*Declaration, error) {
-	result := NewDeclaration()
+func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
+	result := css.NewDeclaration()
 	curValue := ""
 
 	for parser.tokenParsable() {
@@ -173,11 +173,11 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 }
 
 // Parse an At Rule
-func (parser *Parser) parseAtRule() (*Rule, error) {
+func (parser *Parser) parseAtRule() (*css.Rule, error) {
 	// parse rule name (eg: "@import")
 	token := parser.shiftToken()
 
-	result := NewRule(AT_RULE)
+	result := css.NewRule(css.AT_RULE)
 	result.Name = token.Value
 
 	for parser.tokenParsable() {
@@ -187,7 +187,7 @@ func (parser *Parser) parseAtRule() (*Rule, error) {
 			// finished
 			break
 		} else if parser.tokenChar("{") {
-			if result.embedsRules() {
+			if result.EmbedsRules() {
 				// parse rules block
 				rules, err := parser.ParseRules()
 				if err != nil {
@@ -224,8 +224,8 @@ func (parser *Parser) parseAtRule() (*Rule, error) {
 }
 
 // Parse a Qualified Rule
-func (parser *Parser) parseQualifiedRule() (*Rule, error) {
-	result := NewRule(QUALIFIED_RULE)
+func (parser *Parser) parseQualifiedRule() (*css.Rule, error) {
+	result := css.NewRule(css.QUALIFIED_RULE)
 
 	for parser.tokenParsable() {
 		if parser.tokenChar("{") {

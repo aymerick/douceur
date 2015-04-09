@@ -1,4 +1,4 @@
-package douceur
+package css
 
 import "fmt"
 
