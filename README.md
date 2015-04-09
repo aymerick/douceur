@@ -14,7 +14,7 @@ Fetch package:
 
 Usage:
 
-{% highlight golang %}
+```go
 package main
 
 import (
@@ -42,18 +42,18 @@ func main() {
 
     fmt.Print(stylesheet.String())
 }
-{% endhighlight %}
+```
 
 Displays:
 
-{% highlight css %}
+```css
 body {
   background-color: black;
 }
 p {
   color: red;
 }
-{% endhighlight %}
+```
 
 
 ## Test
