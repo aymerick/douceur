@@ -1,2 +1,7 @@
 # douceur
-CSS parser in Go
+
+A simple CSS parser in Go.
+
+## Test
+
+    go test ./... -v
