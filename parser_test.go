@@ -80,9 +80,12 @@ func TestAtRule(t *testing.T) {
 }
 
 @supports (animation-name: test) {
-    … /* specific CSS applied when animations are supported unprefixed */
+    /* specific CSS applied when animations are supported unprefixed */
     @keyframes { /* @supports being a CSS conditional group at-rule, it can includes other relevent at-rules */
-      …
+      0% { top: 0; left: 0; }
+      30% { top: 50px; }
+      68%, 72% { left: 50px; }
+      100% { top: 100px; left: 100%; }
     }
 }
 `
@@ -92,7 +95,7 @@ func TestAtRule(t *testing.T) {
 		t.Fatal("Failed to parse css", err, css)
 	}
 
-	if len(stylesheet.Rules) != 3 {
+	if len(stylesheet.Rules) != 12 {
 		t.Fatal("Failed to parse At Rules", css)
 	}
 }

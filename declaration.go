@@ -12,5 +12,5 @@ func NewDeclaration() *Declaration {
 }
 
 func (decl *Declaration) String() string {
-	return fmt.Sprintf("%s: %s", decl.Property, decl.Value)
+	return fmt.Sprintf("%s: %s;", decl.Property, decl.Value)
 }

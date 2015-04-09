@@ -6,7 +6,7 @@ package douceur
 import (
 	"errors"
 	"fmt"
-	"log"
+	"strings"
 
 	"github.com/gorilla/css/scanner"
 )
@@ -140,7 +140,7 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 			curValue = ""
 
 			parser.shiftToken()
-		} else if parser.tokenChar(";") {
+		} else if parser.tokenChar(";") || parser.tokenChar("}") {
 			if result.Property == "" {
 				errMsg := fmt.Sprintf("Unexpected ; character: %s", parser.nextToken().String())
 				return result, errors.New(errMsg)
@@ -148,8 +148,11 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 
 			result.Value = curValue
 
-			// end of property
-			parser.shiftToken()
+			if parser.tokenChar(";") {
+				parser.shiftToken()
+			}
+
+			// finished
 			break
 		} else {
 			token := parser.shiftToken()
@@ -157,7 +160,7 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 		}
 	}
 
-	log.Printf("[parsed] Declaration: %s", result.String())
+	// log.Printf("[parsed] Declaration: %s", result.String())
 
 	return result, parser.err()
 }
@@ -173,6 +176,8 @@ func (parser *Parser) parseAtRule() (*Rule, error) {
 	for parser.tokenParsable() {
 		if parser.tokenChar(";") {
 			parser.shiftToken()
+
+			// finished
 			break
 		} else if parser.tokenChar("{") {
 			if result.embedsRules() {
@@ -192,6 +197,8 @@ func (parser *Parser) parseAtRule() (*Rule, error) {
 
 				result.Declarations = declarations
 			}
+
+			// finished
 			break
 		} else {
 			// parse prelude
@@ -204,30 +211,59 @@ func (parser *Parser) parseAtRule() (*Rule, error) {
 		}
 	}
 
-	log.Printf("[parsed] Rule: %s", result.String())
+	// log.Printf("[parsed] Rule: %s", result.String())
 
 	return result, parser.err()
 }
 
 // Parse a Qualified Rule
 func (parser *Parser) parseQualifiedRule() (*Rule, error) {
-	// @todo !!!
-	return nil, errors.New("Not implemented")
+	result := NewRule(QUALIFIED_RULE)
+
+	for parser.tokenParsable() {
+		if parser.tokenChar("{") {
+			if result.Prelude == "" {
+				errMsg := fmt.Sprintf("Unexpected { character: %s", parser.nextToken().String())
+				return result, errors.New(errMsg)
+			}
+
+			// parse declarations block
+			declarations, err := parser.ParseDeclarations()
+			if err != nil {
+				return result, err
+			}
+
+			result.Declarations = declarations
+
+			// finished
+			break
+		} else {
+			// parse prelude
+			prelude, err := parser.parsePrelude()
+			if err != nil {
+				return result, err
+			}
+
+			result.Prelude = prelude
+		}
+	}
+
+	// log.Printf("[parsed] Rule: %s", result.String())
+
+	return result, parser.err()
 }
 
 func (parser *Parser) parsePrelude() (string, error) {
 	result := ""
 
 	for parser.tokenParsable() && !parser.tokenEndOfPrelude() {
-		if parser.tokenWS() {
-			parser.shiftToken()
-		} else {
-			token := parser.shiftToken()
-			result += token.Value
-		}
+		token := parser.shiftToken()
+		result += token.Value
 	}
 
-	log.Printf("[parsed] prelude: %s", result)
+	result = strings.TrimSpace(result)
+
+	// log.Printf("[parsed] prelude: %s", result)
 
 	return result, parser.err()
 }

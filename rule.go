@@ -8,7 +8,7 @@ const (
 )
 
 var atRulesWithRulesBlock = []string{
-	"@document", "@font-feature-values", "@media", "@supports",
+	"@document", "@font-feature-values", "@keyframes", "@media", "@supports",
 }
 
 type RuleKind int
@@ -57,14 +57,16 @@ func (rule *Rule) embedsRules() bool {
 }
 
 func (rule *Rule) String() string {
-	result := fmt.Sprintf("[%s]", rule.Kind.String())
+	result := ""
+
+	// result += fmt.Sprintf("[%s] ", rule.Kind.String())
 
 	if rule.Kind == AT_RULE {
-		result += fmt.Sprintf(" %s", rule.Name)
+		result += fmt.Sprintf("%s ", rule.Name)
 	}
 
 	if rule.Prelude != "" {
-		result += fmt.Sprintf(" %s", rule.Prelude)
+		result += fmt.Sprintf("%s", rule.Prelude)
 	}
 
 	if (len(rule.Declarations) == 0) && (len(rule.Rules) == 0) {
