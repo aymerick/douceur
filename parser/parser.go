@@ -1,8 +1,5 @@
 package parser
 
-// cf. http://www.w3.org/TR/css3-syntax/
-// cf. https://github.com/tabatkins/parse-css
-
 import (
 	"errors"
 	"fmt"
