@@ -6,13 +6,14 @@ Vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax
 
 Uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css).
 
-## Usage
+
+## Install
 
 Fetch package:
 
     $ go get github.com/aymerick/douceur
 
-Usage:
+Parse CSS:
 
 ```go
 package main
@@ -54,6 +55,17 @@ p {
   color: red;
 }
 ```
+
+
+## Tool usage
+
+Install tool:
+
+    $ go install github.com/aymerick/douceur
+
+Parse a CSS file:
+
+    $ douceur parse inputfile.css
 
 
 ## Test
