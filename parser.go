@@ -15,7 +15,11 @@ type Parser struct {
 	css  string           // Input css
 	scan *scanner.Scanner // Tokenizer
 
-	tokens []*scanner.Token // Tokens parsed but not consumed yet
+	// Tokens parsed but not consumed yet
+	tokens []*scanner.Token
+
+	// Rule embedding level
+	embedLevel int
 }
 
 func NewParser(css string) *Parser {
@@ -62,6 +66,8 @@ func (parser *Parser) ParseRules() ([]*Rule, error) {
 	if parser.tokenChar("{") {
 		// parsing a block of rules
 		inBlock = true
+		parser.embedLevel += 1
+
 		parser.shiftToken()
 	}
 
@@ -74,16 +80,19 @@ func (parser *Parser) ParseRules() ([]*Rule, error) {
 				return result, errors.New(errMsg)
 			}
 
-			// end of block to parse
 			parser.shiftToken()
+			parser.embedLevel -= 1
+
+			// finished
 			break
 		} else {
 			rule, err := parser.ParseRule()
 			if err != nil {
 				return result, err
-			} else {
-				result = append(result, rule)
 			}
+
+			rule.EmbedLevel = parser.embedLevel
+			result = append(result, rule)
 		}
 	}
 
@@ -133,10 +142,8 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 	curValue := ""
 
 	for parser.tokenParsable() {
-		if parser.tokenIgnorable() {
-			parser.shiftToken()
-		} else if parser.tokenChar(":") {
-			result.Property = curValue
+		if parser.tokenChar(":") {
+			result.Property = strings.TrimSpace(curValue)
 			curValue = ""
 
 			parser.shiftToken()
@@ -146,7 +153,7 @@ func (parser *Parser) ParseDeclaration() (*Declaration, error) {
 				return result, errors.New(errMsg)
 			}
 
-			result.Value = curValue
+			result.Value = strings.TrimSpace(curValue)
 
 			if parser.tokenChar(";") {
 				parser.shiftToken()
@@ -253,6 +260,7 @@ func (parser *Parser) parseQualifiedRule() (*Rule, error) {
 	return result, parser.err()
 }
 
+// Parse Rule prelude
 func (parser *Parser) parsePrelude() (string, error) {
 	result := ""
 
