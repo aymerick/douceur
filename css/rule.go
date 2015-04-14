@@ -9,6 +9,8 @@ const (
 	IDENT_SPACES = 2
 )
 
+type RuleKind int
+
 // Rule kinds
 const (
 	QUALIFIED_RULE RuleKind = iota
@@ -20,10 +22,9 @@ var atRulesWithRulesBlock = []string{
 	"@document", "@font-feature-values", "@keyframes", "@media", "@supports",
 }
 
-type RuleKind int
-
 type Rule struct {
-	Kind         RuleKind
+	Kind RuleKind
+
 	Declarations []*Declaration
 
 	// Raw prelude

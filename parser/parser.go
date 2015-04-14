@@ -384,6 +384,7 @@ func (parser *Parser) tokenAtKeyword() bool {
 	return parser.nextToken().Type == scanner.TokenAtKeyword
 }
 
+// Returns true if next token is given character
 func (parser *Parser) tokenChar(value string) bool {
 	token := parser.nextToken()
 	return (token.Type == scanner.TokenChar) && (token.Value == value)
