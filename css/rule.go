@@ -22,10 +22,12 @@ var atRulesWithRulesBlock = []string{
 	"@document", "@font-feature-values", "@keyframes", "@media", "@supports",
 }
 
+// A parsed CSS rule
 type Rule struct {
 	Kind RuleKind
 
-	Declarations []*Declaration
+	// At Rule name (eg: "@media")
+	Name string
 
 	// Raw prelude
 	Prelude string
@@ -33,8 +35,8 @@ type Rule struct {
 	// Qualified Rule selectors parsed from prelude
 	Selectors []string
 
-	// At Rule name (eg: "@media")
-	Name string
+	// Style properties
+	Declarations []*Declaration
 
 	// At Rule embedded rules
 	Rules []*Rule
@@ -43,6 +45,7 @@ type Rule struct {
 	EmbedLevel int
 }
 
+// Instanciate a new Rule
 func NewRule(kind RuleKind) *Rule {
 	return &Rule{
 		Kind: kind,

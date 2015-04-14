@@ -2,12 +2,14 @@ package css
 
 import "fmt"
 
+// A parsed style property
 type Declaration struct {
 	Property  string
 	Value     string
 	Important bool
 }
 
+// Instanciate a new Declaration
 func NewDeclaration() *Declaration {
 	return &Declaration{}
 }

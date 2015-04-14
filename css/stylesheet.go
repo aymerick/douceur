@@ -1,9 +1,11 @@
 package css
 
+// A Parsed stylesheet
 type Stylesheet struct {
 	Rules []*Rule
 }
 
+// Instanciate a new Stylesheet
 func NewStylesheet() *Stylesheet {
 	return &Stylesheet{}
 }
