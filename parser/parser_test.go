@@ -599,3 +599,33 @@ func TestAtRuleSupports(t *testing.T) {
 
 	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
+
+func TestParseDeclarations(t *testing.T) {
+	input := `color: blue; text-decoration:underline;`
+
+	declarations, err := ParseDeclarations(input)
+	if err != nil {
+		t.Fatal("Failed to parse Declarations:", input)
+	}
+
+	expectedOutput := []*css.Declaration{
+		&css.Declaration{
+			Property: "color",
+			Value:    "blue",
+		},
+		&css.Declaration{
+			Property: "text-decoration",
+			Value:    "underline",
+		},
+	}
+
+	if len(declarations) != len(expectedOutput) {
+		t.Fatal("Failed to parse Declarations:", input)
+	}
+
+	for i, decl := range declarations {
+		if !decl.Equal(expectedOutput[i]) {
+			t.Fatal("Failed to parse Declarations: ", decl.String(), expectedOutput[i].String())
+		}
+	}
+}

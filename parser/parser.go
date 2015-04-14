@@ -33,14 +33,26 @@ func init() {
 	importantRegexp, _ = regexp.Compile(IMPORTANT_SUFFIX_REGEXP)
 }
 
+// Instanciate a new parser
 func NewParser(txt string) *Parser {
 	return &Parser{
 		scan: scanner.New(txt),
 	}
 }
 
+// Parse a whole stylesheet
 func Parse(text string) (*css.Stylesheet, error) {
 	result, err := NewParser(text).ParseStylesheet()
+	if err != nil {
+		return nil, err
+	} else {
+		return result, nil
+	}
+}
+
+// Parse CSS declarations
+func ParseDeclarations(text string) ([]*css.Declaration, error) {
+	result, err := NewParser(text).ParseDeclarations()
 	if err != nil {
 		return nil, err
 	} else {
