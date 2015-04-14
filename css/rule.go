@@ -1,6 +1,9 @@
 package css
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const (
 	IDENT_SPACES = 2
@@ -21,8 +24,13 @@ type RuleKind int
 
 type Rule struct {
 	Kind         RuleKind
-	Prelude      string
 	Declarations []*Declaration
+
+	// Raw prelude
+	Prelude string
+
+	// Qualified Rule selectors parsed from prelude
+	Selectors []string
 
 	// At Rule name (eg: "@media")
 	Name string
@@ -73,9 +81,16 @@ func (rule *Rule) Equal(other *Rule) bool {
 		return false
 	}
 
-	if (len(rule.Declarations) != len(other.Declarations)) ||
+	if (len(rule.Selectors) != len(other.Selectors)) ||
+		(len(rule.Declarations) != len(other.Declarations)) ||
 		(len(rule.Rules) != len(other.Rules)) {
 		return false
+	}
+
+	for i, sel := range rule.Selectors {
+		if sel != other.Selectors[i] {
+			return false
+		}
 	}
 
 	for i, decl := range rule.Declarations {
@@ -109,23 +124,34 @@ func (rule *Rule) Diff(other *Rule) []string {
 		result = append(result, fmt.Sprintf("Name: \"%s\" | \"%s\"", rule.Name, other.Name))
 	}
 
+	if len(rule.Selectors) != len(other.Selectors) {
+		result = append(result, fmt.Sprintf("Selectors: %v | %v", strings.Join(rule.Selectors, ", "), strings.Join(other.Selectors, ", ")))
+	} else {
+		for i, sel := range rule.Selectors {
+			if sel != other.Selectors[i] {
+				result = append(result, fmt.Sprintf("Selector: \"%s\" | \"%s\"", sel, other.Selectors[i]))
+			}
+		}
+	}
+
 	if len(rule.Declarations) != len(other.Declarations) {
 		result = append(result, fmt.Sprintf("Declarations Nb: %d | %d", len(rule.Declarations), len(other.Declarations)))
+	} else {
+		for i, decl := range rule.Declarations {
+			if !decl.Equal(other.Declarations[i]) {
+				result = append(result, fmt.Sprintf("Declaration: \"%s\" | \"%s\"", decl.String(), other.Declarations[i].String()))
+			}
+		}
 	}
 
 	if len(rule.Rules) != len(other.Rules) {
 		result = append(result, fmt.Sprintf("Rules Nb: %d | %d", len(rule.Rules), len(other.Rules)))
-	}
+	} else {
 
-	for i, decl := range rule.Declarations {
-		if !decl.Equal(other.Declarations[i]) {
-			result = append(result, fmt.Sprintf("Declaration: \"%s\" | \"%s\"", decl.String(), other.Declarations[i].String()))
-		}
-	}
-
-	for i, rule := range rule.Rules {
-		if !rule.Equal(other.Rules[i]) {
-			result = append(result, fmt.Sprintf("Rule: \"%s\" | \"%s\"", rule.String(), other.Rules[i].String()))
+		for i, rule := range rule.Rules {
+			if !rule.Equal(other.Rules[i]) {
+				result = append(result, fmt.Sprintf("Rule: \"%s\" | \"%s\"", rule.String(), other.Rules[i].String()))
+			}
 		}
 	}
 
@@ -136,23 +162,28 @@ func (rule *Rule) Diff(other *Rule) []string {
 func (rule *Rule) String() string {
 	result := ""
 
-	// result += fmt.Sprintf("[%s] ", rule.Kind.String())
-
-	if rule.Kind == AT_RULE {
-		result += fmt.Sprintf("%s", rule.Name)
-	}
-
-	if rule.Prelude != "" {
-		if result != "" {
-			result += " "
+	if rule.Kind == QUALIFIED_RULE {
+		for i, sel := range rule.Selectors {
+			if i != 0 {
+				result += ", "
+			}
+			result += sel
 		}
-		result += fmt.Sprintf("%s", rule.Prelude)
+	} else {
+		// AT_RULE
+		result += fmt.Sprintf("%s", rule.Name)
+
+		if rule.Prelude != "" {
+			if result != "" {
+				result += " "
+			}
+			result += fmt.Sprintf("%s", rule.Prelude)
+		}
 	}
 
 	if (len(rule.Declarations) == 0) && (len(rule.Rules) == 0) {
 		result += ";"
 	} else {
-
 		result += " {\n"
 
 		if rule.EmbedsRules() {

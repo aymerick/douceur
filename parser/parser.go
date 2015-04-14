@@ -270,6 +270,11 @@ func (parser *Parser) parseQualifiedRule() (*css.Rule, error) {
 		}
 	}
 
+	result.Selectors = strings.Split(result.Prelude, ",")
+	for i, sel := range result.Selectors {
+		result.Selectors[i] = strings.TrimSpace(sel)
+	}
+
 	// log.Printf("[parsed] Rule: %s", result.String())
 
 	return result, parser.err()
