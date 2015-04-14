@@ -3,11 +3,20 @@ package parser
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/gorilla/css/scanner"
 
 	"github.com/aymerick/douceur/css"
+)
+
+const (
+	IMPORTANT_SUFFIX_REGEXP = `(?i)\s*!important\s*$`
+)
+
+var (
+	importantRegexp *regexp.Regexp
 )
 
 type Parser struct {
@@ -18,6 +27,10 @@ type Parser struct {
 
 	// Rule embedding level
 	embedLevel int
+}
+
+func init() {
+	importantRegexp, _ = regexp.Compile(IMPORTANT_SUFFIX_REGEXP)
 }
 
 func NewParser(txt string) *Parser {
@@ -148,6 +161,11 @@ func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
 			if result.Property == "" {
 				errMsg := fmt.Sprintf("Unexpected ; character: %s", parser.nextToken().String())
 				return result, errors.New(errMsg)
+			}
+
+			if importantRegexp.MatchString(curValue) {
+				result.Important = true
+				curValue = importantRegexp.ReplaceAllString(curValue, "")
 			}
 
 			result.Value = strings.TrimSpace(curValue)

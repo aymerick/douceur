@@ -70,6 +70,50 @@ p > a {
 	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
+func TestQualifiedRuleImportant(t *testing.T) {
+	input := `/* This is a comment */
+p > a {
+    color: blue;
+    text-decoration: underline !important;
+    font-weight: normal   !IMPORTANT    ;
+}`
+
+	expectedRule := &css.Rule{
+		Kind:    css.QUALIFIED_RULE,
+		Prelude: "p > a",
+		Declarations: []*css.Declaration{
+			&css.Declaration{
+				Property:  "color",
+				Value:     "blue",
+				Important: false,
+			},
+			&css.Declaration{
+				Property:  "text-decoration",
+				Value:     "underline",
+				Important: true,
+			},
+			&css.Declaration{
+				Property:  "font-weight",
+				Value:     "normal",
+				Important: true,
+			},
+		},
+	}
+
+	expectedOutput := `p > a {
+  color: blue;
+  text-decoration: underline !important;
+  font-weight: normal !important;
+}`
+
+	stylesheet := MustParse(t, input, 1)
+	rule := stylesheet.Rules[0]
+
+	MustEqualRule(t, rule, expectedRule)
+
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
+}
+
 func TestAtRuleCharset(t *testing.T) {
 	input := `@charset "UTF-8";`
 
