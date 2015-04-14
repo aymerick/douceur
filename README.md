@@ -1,19 +1,35 @@
 # douceur
 
-A simple CSS parser in Go.
+A simple CSS parser and inliner in Go.
 
-Vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
+Parser uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css). It is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
 
-Uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css).
+Inliner uses [goquery](github.com/PuerkitoBio/goquery) to parse HTML.
 
 
-## Install
+## Tool usage
+
+Install tool:
+
+    $ go install github.com/aymerick/douceur
+
+Parse a CSS file and display result:
+
+    $ douceur parse inputfile.css
+
+Inline CSS in an HTML document and display result:
+
+    $ douceur inline inputfile.html
+
+
+## Library usage
 
 Fetch package:
 
     $ go get github.com/aymerick/douceur
 
-Parse CSS:
+
+### Parse CSS
 
 ```go
 package main
@@ -57,15 +73,9 @@ p {
 ```
 
 
-## Tool usage
+### Inline HTML
 
-Install tool:
-
-    $ go install github.com/aymerick/douceur
-
-Parse a CSS file:
-
-    $ douceur parse inputfile.css
+    @todo !!!
 
 
 ## Test
