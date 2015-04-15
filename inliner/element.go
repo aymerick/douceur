@@ -1,7 +1,11 @@
 package inliner
 
 import (
+	"sort"
+
 	"github.com/PuerkitoBio/goquery"
+
+	"github.com/aymerick/douceur/css"
 	"github.com/aymerick/douceur/parser"
 )
 
@@ -45,10 +49,63 @@ func (element *Element) parseInlineStyle() ([]*StyleRule, error) {
 	return result, nil
 }
 
-// Compute style attribute value
-func (element *Element) computesStyle() string {
-	// @todo If declaration is !important, it overwrites specificity
+// Compute css declarations
+func (element *Element) computeDeclarations() ([]*css.Declaration, error) {
+	result := []*css.Declaration{}
 
-	// @todo !!
-	return "caca: prout;"
+	styles := make(map[string]*StyleDeclaration)
+
+	// First: parsed stylesheets rules
+	mergeStyleDeclarations(element.styleRules, styles)
+
+	// Then: inline rules
+	inlineRules, err := element.parseInlineStyle()
+	if err != nil {
+		return result, err
+	}
+
+	mergeStyleDeclarations(inlineRules, styles)
+
+	// map to array
+	for _, styleDecl := range styles {
+		result = append(result, styleDecl.Declaration)
+	}
+
+	// sort declarations by property name
+	sort.Sort(css.DeclarationsByProperty(result))
+
+	return result, nil
+}
+
+// helper
+func mergeStyleDeclarations(styleRules []*StyleRule, output map[string]*StyleDeclaration) {
+	for _, styleRule := range styleRules {
+		for _, declaration := range styleRule.Declarations {
+			styleDecl := NewStyleDeclaration(styleRule, declaration)
+
+			if (output[declaration.Property] == nil) || (styleDecl.Specificity() >= output[declaration.Property].Specificity()) {
+				output[declaration.Property] = styleDecl
+			}
+		}
+	}
+}
+
+// Compute style attribute value
+func (element *Element) computesStyle() (string, error) {
+	result := ""
+
+	declarations, err := element.computeDeclarations()
+	if err != nil {
+		return "", err
+	}
+
+	for _, declaration := range declarations {
+		if result != "" {
+			result += " "
+		}
+
+		result += declaration.StringWithImportant(false)
+	}
+
+	return result, nil
 }

@@ -1,7 +1,6 @@
 package inliner
 
 import (
-	"errors"
 	"strconv"
 	"strings"
 
@@ -13,6 +12,11 @@ import (
 const (
 	ELT_MARKER_ATTR = "douceur-mark"
 )
+
+var unsupportedSelectors = []string{
+	":active", ":after", ":before", ":checked", ":disabled", ":enabled",
+	":first-line", ":first-letter", ":focus", ":hover", ":invalid", ":in-range",
+	":lang", ":link", ":root", ":selection", ":target", ":valid", ":visited"}
 
 // CSS Inliner
 type Inliner struct {
@@ -31,8 +35,11 @@ type Inliner struct {
 	// HTML elements matching collected inlinable style rules
 	elements map[string]*Element
 
-	// CSS declarations that are not inlinable but that must be inserted in output document
+	// CSS rules that are not inlinable but that must be inserted in output document
 	rawRules []*css.Rule
+
+	// CSS style rules that are not inlinable but that must be inserted in output document
+	rawStyleRules []*StyleRule
 
 	// current element marker value
 	eltMarker int
@@ -48,9 +55,6 @@ func NewInliner(html string) *Inliner {
 
 // Inlines css into html document
 func Inline(html string) (string, error) {
-	// @todo Finish that
-	return "", errors.New("NOT IMPLEMENTED")
-
 	result, err := NewInliner(html).Inline()
 	if err != nil {
 		return "", err
@@ -75,7 +79,9 @@ func (inliner *Inliner) Inline() (string, error) {
 	inliner.collectElementsAndRules()
 
 	// inline css
-	inliner.inlineStyleRules()
+	if err := inliner.inlineStyleRules(); err != nil {
+		return "", err
+	}
 
 	// generate HTML document
 	return inliner.genHTML()
@@ -133,39 +139,64 @@ func (inliner *Inliner) collectElementsAndRules() {
 // Handles parsed qualified rule
 func (inliner *Inliner) handleQualifiedRule(rule *css.Rule) {
 	for _, selector := range rule.Selectors {
-		inliner.doc.Find(selector).Each(func(i int, s *goquery.Selection) {
-			// get marker
-			eltMarker, exists := s.Attr(ELT_MARKER_ATTR)
-			if !exists {
-				// mark element
-				eltMarker = strconv.Itoa(inliner.eltMarker)
-				s.SetAttr(ELT_MARKER_ATTR, eltMarker)
-				inliner.eltMarker += 1
+		if Inlinable(selector) {
+			inliner.doc.Find(selector).Each(func(i int, s *goquery.Selection) {
+				// get marker
+				eltMarker, exists := s.Attr(ELT_MARKER_ATTR)
+				if !exists {
+					// mark element
+					eltMarker = strconv.Itoa(inliner.eltMarker)
+					s.SetAttr(ELT_MARKER_ATTR, eltMarker)
+					inliner.eltMarker += 1
 
-				// add new element
-				inliner.elements[eltMarker] = NewElement(s)
-			}
+					// add new element
+					inliner.elements[eltMarker] = NewElement(s)
+				}
 
-			// add style rule to element
-			inliner.elements[eltMarker].addStyleRule(NewStyleRule(selector, rule.Declarations))
-		})
+				// add style rule to element
+				inliner.elements[eltMarker].addStyleRule(NewStyleRule(selector, rule.Declarations))
+			})
+		} else {
+			// Keep it 'as is'
+			inliner.rawStyleRules = append(inliner.rawStyleRules, NewStyleRule(selector, rule.Declarations))
+		}
 	}
 }
 
 // Inline style rules in HTML document
-func (inliner *Inliner) inlineStyleRules() {
+func (inliner *Inliner) inlineStyleRules() error {
 	for _, element := range inliner.elements {
 		// remove marker
 		element.elt.RemoveAttr(ELT_MARKER_ATTR)
 
 		// set style attribute value
-		styleValue := element.computesStyle()
+		styleValue, err := element.computesStyle()
+		if err != nil {
+			return err
+		}
 
 		element.elt.SetAttr("style", styleValue)
 	}
+
+	return nil
 }
 
 // Generates HTML
 func (inliner *Inliner) genHTML() (string, error) {
 	return inliner.doc.Html()
+}
+
+// Returns true if given selector is inlinable
+func Inlinable(selector string) bool {
+	if strings.Contains(selector, "::") {
+		return false
+	}
+
+	for _, badSel := range unsupportedSelectors {
+		if strings.Contains(selector, badSel) {
+			return false
+		}
+	}
+
+	return true
 }

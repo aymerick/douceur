@@ -14,40 +14,40 @@ import "testing"
 // #x34y           /* a=1 b=0 c=0 -> specificity = 100 */
 // #s12:not(FOO)   /* a=1 b=0 c=1 -> specificity = 101 */
 func TestComputeSpecificity(t *testing.T) {
-	if val := computeSpecificity("*"); val != 0 {
+	if val := ComputeSpecificity("*"); val != 0 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("LI"); val != 1 {
+	if val := ComputeSpecificity("LI"); val != 1 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("UL LI"); val != 2 {
+	if val := ComputeSpecificity("UL LI"); val != 2 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("UL OL+LI "); val != 3 {
+	if val := ComputeSpecificity("UL OL+LI "); val != 3 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("H1 + *[REL=up]"); val != 11 {
+	if val := ComputeSpecificity("H1 + *[REL=up]"); val != 11 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("UL OL LI.red"); val != 13 {
+	if val := ComputeSpecificity("UL OL LI.red"); val != 13 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("LI.red.level"); val != 21 {
+	if val := ComputeSpecificity("LI.red.level"); val != 21 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
-	if val := computeSpecificity("#x34y"); val != 100 {
+	if val := ComputeSpecificity("#x34y"); val != 100 {
 		t.Fatal("Failed to compute specificity: ", val)
 	}
 
 	// This one fails ! \o/
-	// if val := computeSpecificity("#s12:not(FOO)"); val != 101 {
+	// if val := ComputeSpecificity("#s12:not(FOO)"); val != 101 {
 	// 	t.Fatal("Failed to compute specificity: ", val)
 	// }
 }

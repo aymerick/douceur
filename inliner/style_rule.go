@@ -10,6 +10,8 @@ import (
 const (
 	INLINE_FAKE_SELECTOR = "*INLINE*"
 
+	// Regular expressions borrowed from premailer:
+	//   https://github.com/premailer/css_parser/blob/master/lib/css_parser/regexps.rb
 	NON_ID_ATTRIBUTES_AND_PSEUDO_CLASSES_REGEXP = `(?i)(\.[\w]+)|\[(\w+)|(\:(link|visited|active|hover|focus|lang|target|enabled|disabled|checked|indeterminate|root|nth-child|nth-last-child|nth-of-type|nth-last-of-type|first-child|last-child|first-of-type|last-of-type|only-child|only-of-type|empty|contains))`
 	ELEMENTS_AND_PSEUDO_ELEMENTS_REGEXP         = `(?i)((^|[\s\+\>\~]+)[\w]+|\:{1,2}(after|before|first-letter|first-line|selection))`
 )
@@ -41,43 +43,14 @@ func NewStyleRule(selector string, declarations []*css.Declaration) *StyleRule {
 	return &StyleRule{
 		Selector:     selector,
 		Declarations: declarations,
-		Specificity:  computeSpecificity(selector),
+		Specificity:  ComputeSpecificity(selector),
 	}
 }
 
+// Computes style rule specificity
+//
 // cf. http://www.w3.org/TR/selectors/#specificity
-//
-// Regular expressions borrowed from premailer:
-//   https://github.com/premailer/css_parser/blob/master/lib/css_parser/regexps.rb
-//
-// NON_ID_ATTRIBUTES_AND_PSEUDO_CLASSES_RX= /
-//   (\.[\w]+)                     # classes
-//   |
-//   \[(\w+)                       # attributes
-//   |
-//   (\:(                          # pseudo classes
-//     link|visited|active
-//     |hover|focus
-//     |lang
-//     |target
-//     |enabled|disabled|checked|indeterminate
-//     |root
-//     |nth-child|nth-last-child|nth-of-type|nth-last-of-type
-//     |first-child|last-child|first-of-type|last-of-type
-//     |only-child|only-of-type
-//     |empty|contains
-//   ))
-// /ix
-// ELEMENTS_AND_PSEUDO_ELEMENTS_RX = /
-//   ((^|[\s\+\>\~]+)[\w]+       # elements
-//   |
-//   \:{1,2}(                    # pseudo-elements
-//     after|before
-//     |first-letter|first-line
-//     |selection
-//   )
-// )/ix
-func computeSpecificity(selector string) int {
+func ComputeSpecificity(selector string) int {
 	result := 0
 
 	if selector == INLINE_FAKE_SELECTOR {

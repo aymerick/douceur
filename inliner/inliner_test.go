@@ -9,36 +9,35 @@ func TestInliner(t *testing.T) {
 	input := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<style type="text/css">
+  body {
+    background-color: #f2f2f2t;
+  }
 
-    <style type="text/css">
-      body {
-        background-color: #f2f2f2t;
-      }
-
-      p {
-        font-family: 'Helvetica Neue', Verdana, sans-serif;
-        color: #eee;
-      }
-    </style>
+  p {
+    font-family: 'Helvetica Neue', Verdana, sans-serif;
+    color: #eee;
+  }
+</style>
   </head>
   <body>
     <p style="color: #222;">
       Inline me please!
     </p>
-  </body>
+</body>
 </html>`
 
 	expectedOutput := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
   </head>
   <body style="background-color: #f2f2f2t;">
-    <p style="color: #222; font-family: 'Helvetica Neue', Verdana, sans-serif;">
+    <p style="color: #222; font-family: &#39;Helvetica Neue&#39;, Verdana, sans-serif;">
       Inline me please!
     </p>
-  </body></html>`
+
+</body></html>`
 
 	output, err := Inline(input)
 	if err != nil {
@@ -46,6 +45,6 @@ func TestInliner(t *testing.T) {
 	}
 
 	if output != expectedOutput {
-		t.Fatal(fmt.Sprintf("CSS inliner error\n   Expected:\n\"%s\"\n   Got:\n\"%s\"", expectedOutput, output))
+		t.Fatal(fmt.Sprintf("CSS inliner error\nExpected:\n\"%s\"\nGot:\n\"%s\"", expectedOutput, output))
 	}
 }
