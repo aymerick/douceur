@@ -1,6 +1,6 @@
 # douceur [![Build Status](https://secure.travis-ci.org/aymerick/douceur.svg?branch=master)](http://travis-ci.org/aymerick/douceur)
 
-A simple CSS parser and inliner in Go.
+A simple CSS parser and inliner in Golang.
 
 Parser is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
 
@@ -167,3 +167,9 @@ Displays:
 
   - Parser uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css).
   - Inliner uses [goquery](github.com/PuerkitoBio/goquery) to manipulate HTML.
+
+
+## Similar projects
+
+  - (premailer)[https://github.com/premailer/premailer]
+  - (roadie)[https://github.com/Mange/roadie]
