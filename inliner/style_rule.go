@@ -1,6 +1,7 @@
 package inliner
 
 import (
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -45,6 +46,27 @@ func NewStyleRule(selector string, declarations []*css.Declaration) *StyleRule {
 		Declarations: declarations,
 		Specificity:  ComputeSpecificity(selector),
 	}
+}
+
+// Returns the string representation of a style rule
+func (styleRule *StyleRule) String() string {
+	result := ""
+
+	result += styleRule.Selector
+
+	if len(styleRule.Declarations) == 0 {
+		result += ";"
+	} else {
+		result += " {\n"
+
+		for _, decl := range styleRule.Declarations {
+			result += fmt.Sprintf("  %s\n", decl.String())
+		}
+
+		result += "}\n"
+	}
+
+	return result
 }
 
 // Computes style rule specificity

@@ -1,12 +1,14 @@
 package inliner
 
 import (
+	"fmt"
 	"strconv"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/aymerick/douceur/css"
 	"github.com/aymerick/douceur/parser"
+	"golang.org/x/net/html"
 )
 
 const (
@@ -36,10 +38,7 @@ type Inliner struct {
 	elements map[string]*Element
 
 	// CSS rules that are not inlinable but that must be inserted in output document
-	rawRules []*css.Rule
-
-	// CSS style rules that are not inlinable but that must be inserted in output document
-	rawStyleRules []*StyleRule
+	rawRules []fmt.Stringer
 
 	// current element marker value
 	eltMarker int
@@ -82,6 +81,9 @@ func (inliner *Inliner) Inline() (string, error) {
 	if err := inliner.inlineStyleRules(); err != nil {
 		return "", err
 	}
+
+	// insert raw stylesheet
+	inliner.insertRawStylesheet()
 
 	// generate HTML document
 	return inliner.genHTML()
@@ -158,7 +160,7 @@ func (inliner *Inliner) handleQualifiedRule(rule *css.Rule) {
 			})
 		} else {
 			// Keep it 'as is'
-			inliner.rawStyleRules = append(inliner.rawStyleRules, NewStyleRule(selector, rule.Declarations))
+			inliner.rawRules = append(inliner.rawRules, NewStyleRule(selector, rule.Declarations))
 		}
 	}
 }
@@ -179,6 +181,46 @@ func (inliner *Inliner) inlineStyleRules() error {
 	}
 
 	return nil
+}
+
+// Computes raw CSS rules
+func (inliner *Inliner) computeRawCSS() string {
+	result := ""
+
+	for _, rawRule := range inliner.rawRules {
+		result += rawRule.String()
+	}
+
+	return result
+}
+
+// Insert raw CSS rules into HTML document
+func (inliner *Inliner) insertRawStylesheet() {
+	rawCSS := inliner.computeRawCSS()
+	if rawCSS != "" {
+		// create <style> element
+		cssNode := &html.Node{
+			Type: html.TextNode,
+			Data: rawCSS,
+		}
+
+		styleNode := &html.Node{
+			Type: html.ElementNode,
+			Data: "style",
+			Attr: []html.Attribute{html.Attribute{Key: "type", Val: "text/css"}},
+		}
+
+		styleNode.AppendChild(cssNode)
+
+		// append to <head> element
+		headNode := inliner.doc.Find("head")
+		if headNode == nil {
+			// @todo Create head node !
+			panic("NOT IMPLEMENTED: create missing <head> node")
+		}
+
+		headNode.AppendNodes(styleNode)
+	}
 }
 
 // Generates HTML
