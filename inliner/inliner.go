@@ -201,7 +201,7 @@ func (inliner *Inliner) insertRawStylesheet() {
 		// create <style> element
 		cssNode := &html.Node{
 			Type: html.TextNode,
-			Data: rawCSS,
+			Data: "\n" + rawCSS,
 		}
 
 		styleNode := &html.Node{
