@@ -155,7 +155,7 @@ func (inliner *Inliner) handleQualifiedRule(rule *css.Rule) {
 					inliner.elements[eltMarker] = NewElement(s)
 				}
 
-				// add style rule to element
+				// add style rule for element
 				inliner.elements[eltMarker].addStyleRule(NewStyleRule(selector, rule.Declarations))
 			})
 		} else {
@@ -171,13 +171,11 @@ func (inliner *Inliner) inlineStyleRules() error {
 		// remove marker
 		element.elt.RemoveAttr(ELT_MARKER_ATTR)
 
-		// set style attribute value
-		styleValue, err := element.computesStyle()
+		// inline element
+		err := element.inline()
 		if err != nil {
 			return err
 		}
-
-		element.elt.SetAttr("style", styleValue)
 	}
 
 	return nil

@@ -18,6 +18,42 @@ type Element struct {
 	styleRules []*StyleRule
 }
 
+type ElementAttr struct {
+	attr     string
+	elements []string
+}
+
+// Index is style property name
+var styleToAttr map[string]*ElementAttr
+
+func init() {
+	// Borrowed from premailer:
+	//   https://github.com/premailer/premailer/blob/master/lib/premailer/premailer.rb
+	styleToAttr = map[string]*ElementAttr{
+		"text-align": &ElementAttr{
+			"align",
+			[]string{"h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "blockquote", "tr", "th", "td"},
+		},
+		"background-color": &ElementAttr{
+			"bgcolor",
+			[]string{"body", "table", "tr", "th", "td"},
+		},
+		"background-image": &ElementAttr{
+			"background",
+			[]string{"table"},
+		},
+		"vertical-align": &ElementAttr{
+			"valign",
+			[]string{"th", "td"},
+		},
+		"float": &ElementAttr{
+			"align",
+			[]string{"img"},
+		},
+		// @todo width and height ?
+	}
+}
+
 // Instanciate a new element
 func NewElement(elt *goquery.Selection) *Element {
 	return &Element{
@@ -30,23 +66,24 @@ func (element *Element) addStyleRule(styleRule *StyleRule) {
 	element.styleRules = append(element.styleRules, styleRule)
 }
 
-// Parse inline style rules
-func (element *Element) parseInlineStyle() ([]*StyleRule, error) {
-	result := []*StyleRule{}
-
-	styleValue, exists := element.elt.Attr("style")
-	if (styleValue == "") || !exists {
-		return result, nil
-	}
-
-	declarations, err := parser.ParseDeclarations(styleValue)
+// Inline styles on element
+func (element *Element) inline() error {
+	// compute declarations
+	declarations, err := element.computeDeclarations()
 	if err != nil {
-		return result, err
+		return err
 	}
 
-	result = append(result, NewStyleRule(INLINE_FAKE_SELECTOR, declarations))
+	// set style attribute
+	styleValue := computeStyleValue(declarations)
+	if styleValue != "" {
+		element.elt.SetAttr("style", styleValue)
+	}
 
-	return result, nil
+	// set additionnal attributes
+	element.setAttributesFromStyle(declarations)
+
+	return nil
 }
 
 // Compute css declarations
@@ -77,6 +114,58 @@ func (element *Element) computeDeclarations() ([]*css.Declaration, error) {
 	return result, nil
 }
 
+// Parse inline style rules
+func (element *Element) parseInlineStyle() ([]*StyleRule, error) {
+	result := []*StyleRule{}
+
+	styleValue, exists := element.elt.Attr("style")
+	if (styleValue == "") || !exists {
+		return result, nil
+	}
+
+	declarations, err := parser.ParseDeclarations(styleValue)
+	if err != nil {
+		return result, err
+	}
+
+	result = append(result, NewStyleRule(INLINE_FAKE_SELECTOR, declarations))
+
+	return result, nil
+}
+
+// Set additional attributes from style declarations
+func (element *Element) setAttributesFromStyle(declarations []*css.Declaration) {
+	// for each style declarations
+	for _, declaration := range declarations {
+		if eltAttr := styleToAttr[declaration.Property]; eltAttr != nil {
+			// check if element is allowed for that attribute
+			for _, eltAllowed := range eltAttr.elements {
+				if element.elt.Nodes[0].Data == eltAllowed {
+					element.elt.SetAttr(eltAttr.attr, declaration.Value)
+
+					break
+				}
+			}
+		}
+	}
+}
+
+// helper
+func computeStyleValue(declarations []*css.Declaration) string {
+	result := ""
+
+	// set style attribute value
+	for _, declaration := range declarations {
+		if result != "" {
+			result += " "
+		}
+
+		result += declaration.StringWithImportant(false)
+	}
+
+	return result
+}
+
 // helper
 func mergeStyleDeclarations(styleRules []*StyleRule, output map[string]*StyleDeclaration) {
 	for _, styleRule := range styleRules {
@@ -88,24 +177,4 @@ func mergeStyleDeclarations(styleRules []*StyleRule, output map[string]*StyleDec
 			}
 		}
 	}
-}
-
-// Compute style attribute value
-func (element *Element) computesStyle() (string, error) {
-	result := ""
-
-	declarations, err := element.computeDeclarations()
-	if err != nil {
-		return "", err
-	}
-
-	for _, declaration := range declarations {
-		if result != "" {
-			result += " "
-		}
-
-		result += declaration.StringWithImportant(false)
-	}
-
-	return result, nil
 }
