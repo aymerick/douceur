@@ -2,9 +2,40 @@
 
 A simple CSS parser and inliner in Go.
 
-Parser uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css). It is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
+Parser is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
 
-Inliner uses [goquery](github.com/PuerkitoBio/goquery) to parse HTML.
+Inliner only parses CSS defined in HTML document, it *DOES NOT* fetch external stylesheets (for now).
+
+Inliner inserts additional attributes when possible, for example:
+
+```html
+<html>
+  <head>
+  <style type="text/css">
+    body {
+      background-color: #f2f2f2;
+    }
+  </style>
+  </head>
+  <body>
+    <p>Inline me !</p>
+  </body>
+</html>`
+```
+
+Becomes:
+
+```html
+<html>
+  <head>
+  </head>
+  <body style="background-color: #f2f2f2;" bgcolor="#f2f2f2">
+    <p>Inline me !</p>
+  </body>
+</html>`
+```
+
+The `bgcolor` attribute is inserted, in addition to the inlined `background-color` style.
 
 
 ## Tool usage
@@ -127,7 +158,12 @@ Displays:
 </body></html>
 ```
 
-
 ## Test
 
     go test ./... -v
+
+
+## Dependencies
+
+  - Parser uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css).
+  - Inliner uses [goquery](github.com/PuerkitoBio/goquery) to manipulate HTML.
