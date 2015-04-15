@@ -1,4 +1,4 @@
-# douceur
+# douceur [![Build Status](https://secure.travis-ci.org/aymerick/douceur.svg?branch=master)](http://travis-ci.org/aymerick/douceur)
 
 A simple CSS parser and inliner in Go.
 
@@ -54,7 +54,7 @@ func main() {
 
     stylesheet, err := parser.Parse(input)
     if err != nil {
-        panic("OMG ! SO BUGGY !")
+        panic("Please fill a bug :)")
     }
 
     fmt.Print(stylesheet.String())
@@ -75,7 +75,57 @@ p {
 
 ### Inline HTML
 
-    @todo !!!
+```go
+package main
+
+import (
+    "fmt"
+
+    "github.com/aymerick/douceur/inliner"
+)
+
+func main() {
+    input := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<style type="text/css">
+  p {
+    font-family: 'Helvetica Neue', Verdana, sans-serif;
+    color: #eee;
+  }
+</style>
+  </head>
+  <body>
+    <p>
+      Inline me please!
+    </p>
+</body>
+</html>`
+
+    html, err := inliner.Inline(input)
+    if err != nil {
+        panic("Please fill a bug :)")
+    }
+
+    fmt.Print(html)
+}
+```
+
+Displays:
+
+```css
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+  </head>
+  <body>
+    <p style="color: #eee; font-family: &#39;Helvetica Neue&#39;, Verdana, sans-serif;">
+      Inline me please!
+    </p>
+
+</body></html>
+```
 
 
 ## Test
