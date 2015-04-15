@@ -171,5 +171,5 @@ Displays:
 
 ## Similar projects
 
-  - (premailer)[https://github.com/premailer/premailer]
-  - (roadie)[https://github.com/Mange/roadie]
+  - [premailer](https://github.com/premailer/premailer)
+  - [roadie](https://github.com/Mange/roadie)
