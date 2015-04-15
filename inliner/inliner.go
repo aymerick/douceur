@@ -187,6 +187,7 @@ func (inliner *Inliner) computeRawCSS() string {
 
 	for _, rawRule := range inliner.rawRules {
 		result += rawRule.String()
+		result += "\n"
 	}
 
 	return result

@@ -137,11 +137,21 @@ func TestNotInlinable(t *testing.T) {
   <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style type="text/css">
+    @media only screen and (max-width: 600px) {
+      table[class="body"] .container {
+        width: 95% !important;
+      }
+    }
+
     a:hover {
       color: #2795b6 !important;
     }
 
     a:active {
+      color: #2795b6 !important;
+    }
+
+    a:visited {
       color: #2795b6 !important;
     }
 </style>
@@ -157,10 +167,18 @@ func TestNotInlinable(t *testing.T) {
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 
   <style type="text/css">
+@media only screen and (max-width: 600px) {
+  table[class="body"] .container {
+    width: 95% !important;
+  }
+}
 a:hover {
   color: #2795b6 !important;
 }
 a:active {
+  color: #2795b6 !important;
+}
+a:visited {
   color: #2795b6 !important;
 }
 </style></head>

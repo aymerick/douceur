@@ -63,7 +63,7 @@ func (styleRule *StyleRule) String() string {
 			result += fmt.Sprintf("  %s\n", decl.String())
 		}
 
-		result += "}\n"
+		result += "}"
 	}
 
 	return result
