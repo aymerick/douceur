@@ -46,7 +46,7 @@ func TestInliner(t *testing.T) {
 	}
 }
 
-// Alreadu inlined style has more priority than <style>
+// Already inlined style has more priority than <style>
 func TestInlineStylePriority(t *testing.T) {
 	input := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -145,15 +145,45 @@ func TestStyleToAttr(t *testing.T) {
   <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
 <style type="text/css">
-  body {
+  h1, h2, h3, h4, h5, h6, p, div, blockquote, tr, th, td {
+    text-align: left;
+  }
+  body, table, tr, th, td {
     background-color: #f2f2f2;
+  }
+  table {
+    background-image: url(my_image.png);
+  }
+  th, td {
+    vertical-align: top;
+  }
+  img {
+    float: left;
   }
 </style>
   </head>
   <body>
+    <h1>test</h1>
+    <h2>test</h2>
+    <h3>test</h3>
+    <h4>test</h4>
+    <h5>test</h5>
+    <h6>test</h6>
     <p>
-      Inline me please!
+      <img src="my_image.png"/>
     </p>
+    <div>test</div>
+    <blockquote>test</blockquote>
+    <table>
+      <tbody>
+        <tr>
+          <th>
+          </th>
+          <td>
+          </td>
+        </tr>
+      </tbody>
+    </table>
 </body>
 </html>`
 
@@ -162,9 +192,27 @@ func TestStyleToAttr(t *testing.T) {
 
   </head>
   <body style="background-color: #f2f2f2;" bgcolor="#f2f2f2">
-    <p>
-      Inline me please!
+    <h1 style="text-align: left;" align="left">test</h1>
+    <h2 style="text-align: left;" align="left">test</h2>
+    <h3 style="text-align: left;" align="left">test</h3>
+    <h4 style="text-align: left;" align="left">test</h4>
+    <h5 style="text-align: left;" align="left">test</h5>
+    <h6 style="text-align: left;" align="left">test</h6>
+    <p style="text-align: left;" align="left">
+      <img src="my_image.png" style="float: left;" align="left"/>
     </p>
+    <div style="text-align: left;" align="left">test</div>
+    <blockquote style="text-align: left;" align="left">test</blockquote>
+    <table style="background-color: #f2f2f2; background-image: url(my_image.png);" bgcolor="#f2f2f2" background="url(my_image.png)">
+      <tbody>
+        <tr style="background-color: #f2f2f2; text-align: left;" bgcolor="#f2f2f2" align="left">
+          <th style="background-color: #f2f2f2; text-align: left; vertical-align: top;" bgcolor="#f2f2f2" align="left" valign="top">
+          </th>
+          <td style="background-color: #f2f2f2; text-align: left; vertical-align: top;" bgcolor="#f2f2f2" align="left" valign="top">
+          </td>
+        </tr>
+      </tbody>
+    </table>
 
 </body></html>`
 
