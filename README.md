@@ -2,6 +2,8 @@
 
 A simple CSS parser and inliner in Golang.
 
+![Douceur Logo](https://github.com/aymerick/douceur/blob/master/douceur.png?raw=true "Douceur")
+
 Parser is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
 
 Inliner only parses CSS defined in HTML document, it *DOES NOT* fetch external stylesheets (for now).
