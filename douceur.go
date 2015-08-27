@@ -11,7 +11,8 @@ import (
 )
 
 const (
-	VERSION = "0.1.0"
+	// Version is package version
+	Version = "0.1.0"
 )
 
 var (
@@ -26,7 +27,7 @@ func main() {
 	flag.Parse()
 
 	if flagVersion {
-		fmt.Println(VERSION)
+		fmt.Println(Version)
 		os.Exit(0)
 	}
 

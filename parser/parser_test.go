@@ -43,7 +43,7 @@ p > a {
 }`
 
 	expectedRule := &css.Rule{
-		Kind:      css.QUALIFIED_RULE,
+		Kind:      css.QualifiedRule,
 		Prelude:   "p > a",
 		Selectors: []string{"p > a"},
 		Declarations: []*css.Declaration{
@@ -80,7 +80,7 @@ p > a {
 }`
 
 	expectedRule := &css.Rule{
-		Kind:      css.QUALIFIED_RULE,
+		Kind:      css.QualifiedRule,
 		Prelude:   "p > a",
 		Selectors: []string{"p > a"},
 		Declarations: []*css.Declaration{
@@ -128,7 +128,7 @@ body,
 }`
 
 	expectedRule1 := &css.Rule{
-		Kind:      css.QUALIFIED_RULE,
+		Kind:      css.QualifiedRule,
 		Prelude:   "table, tr, td",
 		Selectors: []string{"table", "tr", "td"},
 		Declarations: []*css.Declaration{
@@ -140,7 +140,7 @@ body,
 	}
 
 	expectedRule2 := &css.Rule{
-		Kind: css.QUALIFIED_RULE,
+		Kind: css.QualifiedRule,
 		Prelude: `body,
   h1,   h2,
     h3`,
@@ -172,7 +172,7 @@ func TestAtRuleCharset(t *testing.T) {
 	input := `@charset "UTF-8";`
 
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@charset",
 		Prelude: "\"UTF-8\"",
 	}
@@ -195,7 +195,7 @@ func TestAtRuleCounterStyle(t *testing.T) {
 }`
 
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@counter-style",
 		Prelude: "footnote",
 		Declarations: []*css.Declaration{
@@ -240,7 +240,7 @@ func TestAtRuleDocument(t *testing.T) {
 }`
 
 	expectedRule := &css.Rule{
-		Kind: css.AT_RULE,
+		Kind: css.AtRule,
 		Name: "@document",
 		Prelude: `url(http://www.w3.org/),
                url-prefix(http://www.w3.org/Style/),
@@ -248,7 +248,7 @@ func TestAtRuleDocument(t *testing.T) {
                regexp("https:.*")`,
 		Rules: []*css.Rule{
 			&css.Rule{
-				Kind:      css.QUALIFIED_RULE,
+				Kind:      css.QualifiedRule,
 				Prelude:   "body",
 				Selectors: []string{"body"},
 				Declarations: []*css.Declaration{
@@ -293,7 +293,7 @@ func TestAtRuleFontFace(t *testing.T) {
 }`
 
 	expectedRule := &css.Rule{
-		Kind: css.AT_RULE,
+		Kind: css.AtRule,
 		Name: "@font-face",
 		Declarations: []*css.Declaration{
 			&css.Declaration{
@@ -328,12 +328,12 @@ func TestAtRuleFontFeatureValues(t *testing.T) {
   }
 }`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@font-feature-values",
 		Prelude: "Font Two",
 		Rules: []*css.Rule{
 			&css.Rule{
-				Kind: css.AT_RULE,
+				Kind: css.AtRule,
 				Name: "@styleset",
 				Declarations: []*css.Declaration{
 					&css.Declaration{
@@ -364,13 +364,13 @@ func TestAtRuleImport(t *testing.T) {
 @import url('landscape.css') screen and (orientation:landscape);`
 
 	expectedRule1 := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@import",
 		Prelude: "\"my-styles.css\"",
 	}
 
 	expectedRule2 := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@import",
 		Prelude: "url('landscape.css') screen and (orientation:landscape)",
 	}
@@ -389,12 +389,12 @@ func TestAtRuleKeyframes(t *testing.T) {
   100% { top: 100px; left: 100%; }
 }`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@keyframes",
 		Prelude: "identifier",
 		Rules: []*css.Rule{
 			&css.Rule{
-				Kind:      css.QUALIFIED_RULE,
+				Kind:      css.QualifiedRule,
 				Prelude:   "0%",
 				Selectors: []string{"0%"},
 				Declarations: []*css.Declaration{
@@ -409,7 +409,7 @@ func TestAtRuleKeyframes(t *testing.T) {
 				},
 			},
 			&css.Rule{
-				Kind:      css.QUALIFIED_RULE,
+				Kind:      css.QualifiedRule,
 				Prelude:   "100%",
 				Selectors: []string{"100%"},
 				Declarations: []*css.Declaration{
@@ -450,12 +450,12 @@ func TestAtRuleMedia(t *testing.T) {
   body { line-height: 1.2 }
 }`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@media",
 		Prelude: "screen, print",
 		Rules: []*css.Rule{
 			&css.Rule{
-				Kind:      css.QUALIFIED_RULE,
+				Kind:      css.QualifiedRule,
 				Prelude:   "body",
 				Selectors: []string{"body"},
 				Declarations: []*css.Declaration{
@@ -485,7 +485,7 @@ func TestAtRuleMedia(t *testing.T) {
 func TestAtRuleNamespace(t *testing.T) {
 	input := `@namespace svg url(http://www.w3.org/2000/svg);`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@namespace",
 		Prelude: "svg url(http://www.w3.org/2000/svg)",
 	}
@@ -504,7 +504,7 @@ func TestAtRulePage(t *testing.T) {
   margin-right: 3cm;
 }`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@page",
 		Prelude: ":left",
 		Declarations: []*css.Declaration{
@@ -536,16 +536,16 @@ func TestAtRuleSupports(t *testing.T) {
     }
 }`
 	expectedRule := &css.Rule{
-		Kind:    css.AT_RULE,
+		Kind:    css.AtRule,
 		Name:    "@supports",
 		Prelude: "(animation-name: test)",
 		Rules: []*css.Rule{
 			&css.Rule{
-				Kind: css.AT_RULE,
+				Kind: css.AtRule,
 				Name: "@keyframes",
 				Rules: []*css.Rule{
 					&css.Rule{
-						Kind:      css.QUALIFIED_RULE,
+						Kind:      css.QualifiedRule,
 						Prelude:   "0%",
 						Selectors: []string{"0%"},
 						Declarations: []*css.Declaration{
@@ -560,7 +560,7 @@ func TestAtRuleSupports(t *testing.T) {
 						},
 					},
 					&css.Rule{
-						Kind:      css.QUALIFIED_RULE,
+						Kind:      css.QualifiedRule,
 						Prelude:   "100%",
 						Selectors: []string{"100%"},
 						Declarations: []*css.Declaration{

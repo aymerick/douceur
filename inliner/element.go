@@ -9,7 +9,7 @@ import (
 	"github.com/aymerick/douceur/parser"
 )
 
-// An HTML element with matching CSS rules
+// Element represents a HTML element with matching CSS rules
 type Element struct {
 	// The goquery handler
 	elt *goquery.Selection
@@ -18,6 +18,7 @@ type Element struct {
 	styleRules []*StyleRule
 }
 
+// ElementAttr represents a HTML element attribute
 type ElementAttr struct {
 	attr     string
 	elements []string
@@ -54,7 +55,7 @@ func init() {
 	}
 }
 
-// Instanciate a new element
+// NewElement instanciates a new element
 func NewElement(elt *goquery.Selection) *Element {
 	return &Element{
 		elt: elt,
@@ -128,7 +129,7 @@ func (element *Element) parseInlineStyle() ([]*StyleRule, error) {
 		return result, err
 	}
 
-	result = append(result, NewStyleRule(INLINE_FAKE_SELECTOR, declarations))
+	result = append(result, NewStyleRule(inlineFakeSelector, declarations))
 
 	return result, nil
 }
