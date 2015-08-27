@@ -16,7 +16,7 @@ func NewStyleDeclaration(styleRule *StyleRule, declaration *css.Declaration) *St
 	}
 }
 
-// StyleDeclaration computes style declaration specificity
+// Specificity computes style declaration specificity
 func (styleDecl *StyleDeclaration) Specificity() int {
 	if styleDecl.Declaration.Important {
 		return 10000

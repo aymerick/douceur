@@ -31,23 +31,23 @@ func init() {
 	// Borrowed from premailer:
 	//   https://github.com/premailer/premailer/blob/master/lib/premailer/premailer.rb
 	styleToAttr = map[string]*ElementAttr{
-		"text-align": &ElementAttr{
+		"text-align": {
 			"align",
 			[]string{"h1", "h2", "h3", "h4", "h5", "h6", "p", "div", "blockquote", "tr", "th", "td"},
 		},
-		"background-color": &ElementAttr{
+		"background-color": {
 			"bgcolor",
 			[]string{"body", "table", "tr", "th", "td"},
 		},
-		"background-image": &ElementAttr{
+		"background-image": {
 			"background",
 			[]string{"table"},
 		},
-		"vertical-align": &ElementAttr{
+		"vertical-align": {
 			"valign",
 			[]string{"th", "td"},
 		},
-		"float": &ElementAttr{
+		"float": {
 			"align",
 			[]string{"img"},
 		},
