@@ -2,6 +2,9 @@ package inliner
 
 import (
 	"fmt"
+
+	"github.com/aymerick/douceur/parser"
+
 	"testing"
 )
 
@@ -36,6 +39,16 @@ func TestInliner(t *testing.T) {
 
 </body></html>`
 
+	expectedOutputCustom := `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+
+  </head>
+  <body style="color: #eee; font-family: &#39;Helvetica Neue&#39;, Verdana, sans-serif;">
+    <p style="color: #eee; font-family: &#39;Helvetica Neue&#39;, Verdana, sans-serif;">
+      Inline me please!
+    </p>
+
+</body></html>`
 	output, err := Inline(input)
 	if err != nil {
 		t.Fatal("Failed to inline html:", err)
@@ -43,6 +56,25 @@ func TestInliner(t *testing.T) {
 
 	if output != expectedOutput {
 		t.Fatal(fmt.Sprintf("CSS inliner error\nExpected:\n\"%s\"\nGot:\n\"%s\"", expectedOutput, output))
+	}
+
+	inputStyle := `body {
+    font-family: 'Helvetica Neue', Verdana, sans-serif;
+    color: #eee;
+  }
+`
+	st, err := parser.Parse(inputStyle)
+	if err != nil {
+		t.Fatal("Failed to parse css:", err)
+	}
+
+	output, err = Inline(input, st)
+	if err != nil {
+		t.Fatal("Failed to inline html:", err)
+	}
+
+	if output != expectedOutputCustom {
+		t.Fatal(fmt.Sprintf("CSS inliner error\nExpected:\n\"%s\"\nGot:\n\"%s\"", expectedOutputCustom, output))
 	}
 }
 
