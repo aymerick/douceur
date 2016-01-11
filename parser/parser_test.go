@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/aymerick/douceur/css"
+	"github.com/redforks/douceur/css"
 )
 
 func MustParse(t *testing.T, txt string, nbRules int) *css.Stylesheet {
@@ -427,6 +427,68 @@ func TestAtRuleKeyframes(t *testing.T) {
 	}
 
 	expectedOutput := `@keyframes identifier {
+  0% {
+    top: 0;
+    left: 0;
+  }
+  100% {
+    top: 100px;
+    left: 100%;
+  }
+}`
+
+	stylesheet := MustParse(t, input, 1)
+	rule := stylesheet.Rules[0]
+
+	MustEqualRule(t, rule, expectedRule)
+
+	MustEqualCSS(t, stylesheet.String(), expectedOutput)
+}
+
+func TestAtRuleWebkitKeyframes(t *testing.T) {
+	input := `@-webkit-keyframes identifier {
+  0% { top: 0; left: 0; }
+  100% { top: 100px; left: 100%; }
+}`
+	expectedRule := &css.Rule{
+		Kind:    css.AtRule,
+		Name:    "@-webkit-keyframes",
+		Prelude: "identifier",
+		Rules: []*css.Rule{
+			{
+				Kind:      css.QualifiedRule,
+				Prelude:   "0%",
+				Selectors: []string{"0%"},
+				Declarations: []*css.Declaration{
+					{
+						Property: "top",
+						Value:    "0",
+					},
+					{
+						Property: "left",
+						Value:    "0",
+					},
+				},
+			},
+			{
+				Kind:      css.QualifiedRule,
+				Prelude:   "100%",
+				Selectors: []string{"100%"},
+				Declarations: []*css.Declaration{
+					{
+						Property: "top",
+						Value:    "100px",
+					},
+					{
+						Property: "left",
+						Value:    "100%",
+					},
+				},
+			},
+		},
+	}
+
+	expectedOutput := `@-webkit-keyframes identifier {
   0% {
     top: 0;
     left: 0;
