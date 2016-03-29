@@ -15,12 +15,16 @@ const (
 	Version = "0.2.0"
 )
 
-var (
-	flagVersion bool
-)
+// Usage banner for when the command line is invoked improperly
+var Usage = func() {
+	fmt.Fprintf(os.Stderr, "USAGE: douceur [parse|inline] filename\n")
+	flag.PrintDefaults()
+}
+var flagVersion bool
 
 func init() {
 	flag.BoolVar(&flagVersion, "version", false, "Display version")
+	flag.Usage = Usage
 }
 
 func main() {
@@ -33,28 +37,25 @@ func main() {
 
 	args := flag.Args()
 
-	if len(args) == 0 {
-		fmt.Println("No command supplied")
+	if len(args) < 1 {
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if len(args) < 2 {
+		fmt.Fprintf(os.Stderr, "Missing file path")
+		flag.Usage()
 		os.Exit(1)
 	}
 
 	switch args[0] {
 	case "parse":
-		if len(args) < 2 {
-			fmt.Println("Missing file path")
-			os.Exit(1)
-		}
-
 		parseCSS(args[1])
 	case "inline":
-		if len(args) < 2 {
-			fmt.Println("Missing file path")
-			os.Exit(1)
-		}
-
 		inlineCSS(args[1])
 	default:
-		fmt.Println("Unexpected command: ", args[0])
+		fmt.Fprintf(os.Stderr, "Unexpected command: %s", args[0])
+		flag.Usage()
 		os.Exit(1)
 	}
 }
