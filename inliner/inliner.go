@@ -42,6 +42,12 @@ type Inliner struct {
 
 	// current element marker value
 	eltMarker int
+
+	// Do not remove original rules after inlining the styles
+	KeepStyle bool
+
+	// Append rules after parsing the HTML document to the body instead of head
+	AppendToBody bool
 }
 
 // NewInliner instanciates a new Inliner
@@ -130,6 +136,9 @@ func (inliner *Inliner) collectElementsAndRules() {
 			if rule.Kind == css.QualifiedRule {
 				// Let's go!
 				inliner.handleQualifiedRule(rule)
+				if inliner.KeepStyle {
+					inliner.rawRules = append(inliner.rawRules, rule)
+				}
 			} else {
 				// Keep it 'as is'
 				inliner.rawRules = append(inliner.rawRules, rule)
@@ -211,14 +220,19 @@ func (inliner *Inliner) insertRawStylesheet() {
 
 		styleNode.AppendChild(cssNode)
 
-		// append to <head> element
-		headNode := inliner.doc.Find("head")
-		if headNode == nil {
-			// @todo Create head node !
-			panic("NOT IMPLEMENTED: create missing <head> node")
+		var elementNode string
+		if inliner.AppendToBody {
+			elementNode = "body"
+		} else {
+			elementNode = "head"
 		}
 
-		headNode.AppendNodes(styleNode)
+		node := inliner.doc.Find(elementNode)
+		if node == nil {
+			// @todo create head/body node !
+			panic(fmt.Sprintf("NOT IMPLEMENTED: create missing <%s> node", elementNode))
+		}
+		node.AppendNodes(styleNode)
 	}
 }
 
