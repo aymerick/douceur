@@ -68,7 +68,7 @@ func (element *Element) addStyleRule(styleRule *StyleRule) {
 }
 
 // Inline styles on element
-func (element *Element) inline() error {
+func (element *Element) inline(keepImportant bool) error {
 	// compute declarations
 	declarations, err := element.computeDeclarations()
 	if err != nil {
@@ -76,7 +76,7 @@ func (element *Element) inline() error {
 	}
 
 	// set style attribute
-	styleValue := computeStyleValue(declarations)
+	styleValue := computeStyleValue(declarations, keepImportant)
 	if styleValue != "" {
 		element.elt.SetAttr("style", styleValue)
 	}
@@ -152,7 +152,7 @@ func (element *Element) setAttributesFromStyle(declarations []*css.Declaration) 
 }
 
 // helper
-func computeStyleValue(declarations []*css.Declaration) string {
+func computeStyleValue(declarations []*css.Declaration, keepImportant bool) string {
 	result := ""
 
 	// set style attribute value
@@ -161,7 +161,7 @@ func computeStyleValue(declarations []*css.Declaration) string {
 			result += " "
 		}
 
-		result += declaration.StringWithImportant(false)
+		result += declaration.StringWithImportant(keepImportant)
 	}
 
 	return result

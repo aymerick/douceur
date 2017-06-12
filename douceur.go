@@ -17,10 +17,12 @@ const (
 
 var (
 	flagVersion bool
+	keepImportant bool
 )
 
 func init() {
 	flag.BoolVar(&flagVersion, "version", false, "Display version")
+	flag.BoolVar(&keepImportant, "keepImportant", false, "keep !important suffix")
 }
 
 func main() {
@@ -52,7 +54,7 @@ func main() {
 			os.Exit(1)
 		}
 
-		inlineCSS(args[1])
+		inlineCSS(args[1], keepImportant)
 	default:
 		fmt.Println("Unexpected command: ", args[0])
 		os.Exit(1)
@@ -73,10 +75,13 @@ func parseCSS(filePath string) {
 }
 
 // inlines CSS into HTML and display result
-func inlineCSS(filePath string) {
+func inlineCSS(filePath string, keepImportant bool) {
 	input := readFile(filePath)
 
-	output, err := inliner.Inline(string(input))
+	output, err := inliner.InlineWithConfig(
+		string(input),
+		inliner.Config{KeepImportant: keepImportant},
+	)
 	if err != nil {
 		fmt.Println("Inlining error: ", err)
 		os.Exit(1)
