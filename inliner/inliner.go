@@ -20,6 +20,11 @@ var unsupportedSelectors = []string{
 	":first-line", ":first-letter", ":focus", ":hover", ":invalid", ":in-range",
 	":lang", ":link", ":root", ":selection", ":target", ":valid", ":visited"}
 
+// Config configs the Inliner
+type Config struct {
+	KeepImportant bool
+}
+
 // Inliner presents a CSS Inliner
 type Inliner struct {
 	// Raw HTML
@@ -42,19 +47,27 @@ type Inliner struct {
 
 	// current element marker value
 	eltMarker int
+
+	config Config
 }
 
 // NewInliner instanciates a new Inliner
-func NewInliner(html string) *Inliner {
+func NewInliner(html string, config Config) *Inliner {
 	return &Inliner{
 		html:     html,
+		config:   config,
 		elements: make(map[string]*Element),
 	}
 }
 
 // Inline inlines css into html document
 func Inline(html string) (string, error) {
-	result, err := NewInliner(html).Inline()
+	return InlineWithConfig(html, Config{KeepImportant: false})
+}
+
+// InlineWithConfig inlines css into html document with configs specified
+func InlineWithConfig(html string, config Config) (string, error) {
+	result, err := NewInliner(html, config).Inline()
 	if err != nil {
 		return "", err
 	}
@@ -172,7 +185,7 @@ func (inliner *Inliner) inlineStyleRules() error {
 		element.elt.RemoveAttr(eltMarkerAttr)
 
 		// inline element
-		err := element.inline()
+		err := element.inline(inliner.config.KeepImportant)
 		if err != nil {
 			return err
 		}
