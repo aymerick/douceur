@@ -601,7 +601,7 @@ func TestAtRuleSupports(t *testing.T) {
 }
 
 func TestParseDeclarations(t *testing.T) {
-	input := `color: blue; text-decoration:underline;`
+	input := `color: blue; text-decoration:underline`
 
 	declarations, err := ParseDeclarations(input)
 	if err != nil {
