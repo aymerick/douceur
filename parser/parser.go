@@ -164,13 +164,13 @@ func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
 	result := css.NewDeclaration()
 	curValue := ""
 
-	for parser.tokenParsable() {
+	for !parser.tokenError() {
 		if parser.tokenChar(":") {
 			result.Property = strings.TrimSpace(curValue)
 			curValue = ""
 
 			parser.shiftToken()
-		} else if parser.tokenChar(";") || parser.tokenChar("}") {
+		} else if parser.tokenChar(";") || parser.tokenChar("}") || parser.tokenEOF() {
 			if result.Property == "" {
 				errMsg := fmt.Sprintf("Unexpected ; character: %s", parser.nextToken().String())
 				return result, errors.New(errMsg)
