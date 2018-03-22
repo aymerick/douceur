@@ -34,7 +34,7 @@ func init() {
 	importantRegexp = regexp.MustCompile(importantSuffixRegexp)
 }
 
-// NewParser instanciates a new parser
+// NewParser instantiates a new parser
 func NewParser(txt string) *Parser {
 	return &Parser{
 		scan: scanner.New(txt),
@@ -43,22 +43,12 @@ func NewParser(txt string) *Parser {
 
 // Parse parses a whole stylesheet
 func Parse(text string) (*css.Stylesheet, error) {
-	result, err := NewParser(text).ParseStylesheet()
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return NewParser(text).ParseStylesheet()
 }
 
 // ParseDeclarations parses CSS declarations
 func ParseDeclarations(text string) ([]*css.Declaration, error) {
-	result, err := NewParser(text).ParseDeclarations()
-	if err != nil {
-		return nil, err
-	}
-
-	return result, nil
+	return NewParser(text).ParseDeclarations()
 }
 
 // ParseStylesheet parses a stylesheet
