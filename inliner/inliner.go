@@ -45,16 +45,21 @@ type Inliner struct {
 }
 
 // NewInliner instanciates a new Inliner
-func NewInliner(html string) *Inliner {
+func NewInliner(html string, styles ...*css.Stylesheet) *Inliner {
+	var st []*css.Stylesheet
+	if len(styles) > 0 {
+		st = append(st, styles...)
+	}
 	return &Inliner{
-		html:     html,
-		elements: make(map[string]*Element),
+		html:        html,
+		elements:    make(map[string]*Element),
+		stylesheets: st,
 	}
 }
 
 // Inline inlines css into html document
-func Inline(html string) (string, error) {
-	result, err := NewInliner(html).Inline()
+func Inline(html string, styles ...*css.Stylesheet) (string, error) {
+	result, err := NewInliner(html, styles...).Inline()
 	if err != nil {
 		return "", err
 	}
@@ -104,6 +109,8 @@ func (inliner *Inliner) parseHTML() error {
 // Parses and removes stylesheets from HTML document
 func (inliner *Inliner) parseStylesheets() error {
 	var result error
+	if len(inliner.stylesheets) > 0 {
+	}
 
 	inliner.doc.Find("style").EachWithBreak(func(i int, s *goquery.Selection) bool {
 		stylesheet, err := parser.Parse(s.Text())
