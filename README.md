@@ -168,7 +168,7 @@ Displays:
 ## Dependencies
 
   - Parser uses [Gorilla CSS3 tokenizer](https://github.com/gorilla/css).
-  - Inliner uses [goquery](github.com/PuerkitoBio/goquery) to manipulate HTML.
+  - Inliner uses [goquery](https://github.com/PuerkitoBio/goquery) to manipulate HTML.
 
 
 ## Similar projects
