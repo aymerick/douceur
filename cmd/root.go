@@ -17,7 +17,6 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/spf13/cobra"
@@ -42,7 +41,7 @@ func Execute() {
 }
 
 func readFile(filePath string) []byte {
-	file, err := ioutil.ReadFile(filePath)
+	file, err := os.ReadFile(filePath)
 	if err != nil {
 		fmt.Println("Failed to open file: ", filePath, err)
 		os.Exit(1)
