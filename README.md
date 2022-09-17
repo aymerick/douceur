@@ -2,7 +2,7 @@
 
 A simple CSS parser and inliner in Golang.
 
-![Douceur Logo](https://github.com/aymerick/douceur/blob/master/douceur.png?raw=true "Douceur")
+![Douceur Logo](https://github.com/lab42/douceur/blob/master/douceur.png?raw=true "Douceur")
 
 Parser is vaguely inspired by [CSS Syntax Module Level 3](http://www.w3.org/TR/css3-syntax) and [corresponding JS parser](https://github.com/tabatkins/parse-css).
 
@@ -70,7 +70,7 @@ package main
 import (
     "fmt"
 
-    "github.com/aymerick/douceur/parser"
+    "github.com/lab42/douceur/parser"
 )
 
 func main() {
@@ -114,7 +114,7 @@ package main
 import (
     "fmt"
 
-    "github.com/aymerick/douceur/inliner"
+    "github.com/lab42/douceur/inliner"
 )
 
 func main() {
