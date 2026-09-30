@@ -600,6 +600,32 @@ func TestAtRuleSupports(t *testing.T) {
 	MustEqualCSS(t, stylesheet.String(), expectedOutput)
 }
 
+func TestParseDeclarationWithoutTrailingSemicolon(t *testing.T) {
+	declarations, err := ParseDeclarations("color: blue")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(declarations) != 1 || declarations[0].Property != "color" || declarations[0].Value != "blue" || declarations[0].Important {
+		t.Fatalf("%v", declarations)
+	}
+
+	declarations, err = ParseDeclarations("color: blue !important")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(declarations) != 1 || declarations[0].Property != "color" || declarations[0].Value != "blue" || !declarations[0].Important {
+		t.Fatalf("%v", declarations)
+	}
+
+	declarations, err = ParseDeclarations("color: blue; background: white")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(declarations) != 2 || declarations[1].Property != "background" || declarations[1].Value != "white" {
+		t.Fatalf("%v", declarations)
+	}
+}
+
 func TestParseDeclarations(t *testing.T) {
 	input := `color: blue; text-decoration:underline;`
 

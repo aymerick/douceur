@@ -153,6 +153,7 @@ func (parser *Parser) ParseDeclarations() ([]*css.Declaration, error) {
 func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
 	result := css.NewDeclaration()
 	curValue := ""
+	finished := false
 
 	for parser.tokenParsable() {
 		if parser.tokenChar(":") {
@@ -166,18 +167,14 @@ func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
 				return result, errors.New(errMsg)
 			}
 
-			if importantRegexp.MatchString(curValue) {
-				result.Important = true
-				curValue = importantRegexp.ReplaceAllString(curValue, "")
-			}
-
-			result.Value = strings.TrimSpace(curValue)
+			finishDeclaration(result, curValue)
 
 			if parser.tokenChar(";") {
 				parser.shiftToken()
 			}
 
 			// finished
+			finished = true
 			break
 		} else {
 			token := parser.shiftToken()
@@ -185,9 +182,23 @@ func (parser *Parser) ParseDeclaration() (*css.Declaration, error) {
 		}
 	}
 
+	// A declaration list may end at EOF. The last declaration does not need a semicolon.
+	if !finished && result.Property != "" {
+		finishDeclaration(result, curValue)
+	}
+
 	// log.Printf("[parsed] Declaration: %s", result.String())
 
 	return result, parser.err()
+}
+
+func finishDeclaration(result *css.Declaration, curValue string) {
+	if importantRegexp.MatchString(curValue) {
+		result.Important = true
+		curValue = importantRegexp.ReplaceAllString(curValue, "")
+	}
+
+	result.Value = strings.TrimSpace(curValue)
 }
 
 // Parse an At Rule
