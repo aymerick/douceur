@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aymerick/douceur/css"
 )
@@ -32,6 +33,22 @@ func MustEqualRule(t *testing.T, parsedRule *css.Rule, expectedRule *css.Rule) {
 func MustEqualCSS(t *testing.T, ruleString string, expected string) {
 	if ruleString != expected {
 		t.Fatal(fmt.Sprintf("CSS generation error\n   Expected:\n\"%s\"\n   Got:\n\"%s\"", expected, ruleString))
+	}
+}
+
+func TestMediaDeclarationDoesNotHang(t *testing.T) {
+	done := make(chan error, 1)
+	go func() {
+		_, err := Parse("\n@media ( __desktop ) {\n  background-color: red;\n}\n")
+		done <- err
+	}()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("expected an error for a declaration where a rule was required")
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("Parse hung")
 	}
 }
 

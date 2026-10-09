@@ -262,6 +262,12 @@ func (parser *Parser) parseQualifiedRule() (*css.Rule, error) {
 
 			// finished
 			break
+		} else if parser.tokenChar(";") {
+			// A qualified rule ends at '{'. A ';' is a declaration with no
+			// selector. parsePrelude stops on that ';' without consuming it,
+			// so retrying the prelude never advances.
+			errMsg := fmt.Sprintf("Unexpected ; character: %s", parser.nextToken().String())
+			return result, errors.New(errMsg)
 		} else {
 			// parse prelude
 			prelude, err := parser.parsePrelude()
